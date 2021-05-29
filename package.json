@@ -4,7 +4,7 @@
     "description": "clones youtube",
     "main": "init.js",
     "scripts": {
-        "start": "nodemon --exec babel-node src/server.js"
+        "start": "nodemon --exec babel-node src/init.js"
     },
     "repository": {
         "type": "git",
@@ -27,7 +27,6 @@
         "@babel/core": "^7.14.0",
         "@babel/node": "^7.13.13",
         "@babel/preset-env": "^7.14.0",
-        "prettier": "^2.3.0",
-        "prettier-plugin-pug": "^1.0.0-alpha.8"
+        "prettier": "^2.3.0"
     }
 }

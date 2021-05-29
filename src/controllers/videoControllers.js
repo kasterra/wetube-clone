@@ -1,64 +1,53 @@
-let videos = [
-  {
-    title: "first video",
-    rating: 5,
-    comments: 2,
-    createdAt: "2 min ago",
-    id: 1,
-    views: 1,
-  },
-  {
-    title: "second video",
-    rating: 5,
-    comments: 2,
-    createdAt: "2 min ago",
-    id: 2,
-    views: 2,
-  },
-  {
-    title: "third video",
-    rating: 5,
-    comments: 2,
-    createdAt: "2 min ago",
-    id: 3,
-    views: 3,
-  },
-];
+import Video from "../models/Video";
+import video from "../models/Video";
 
-export const trending = (req, res) =>
-  res.render("home", { pageTitle: "Home", videos });
+export const home = async (req, res) => {
+  try {
+    const videos = await Video.find({});
+    console.log(videos);
+    return res.render("home", { pageTitle: "Home", videos });
+  } catch (error) {}
+};
 export const search = (req, res) => res.send("search");
 export const deleteVideo = (req, res) => res.send("delete video");
-export const watch = (req, res) => {
+export const watch = async (req, res) => {
   const { id } = req.params;
-  const video = videos[id - 1];
-  return res.render("watch", { pageTitle: `Watching ${video.title}`, video });
+  const video = await Video.findById(id);
+  return res.render("watch", { pageTitle: video.title, video });
 };
 export const getEdit = (req, res) => {
   const { id } = req.params;
-  const video = videos[id - 1];
-  return res.render("edit", { pageTitle: `Editing ${video.title}`, video });
+  return res.render("edit");
 };
 
 export const postEdit = (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
-  videos[id - 1].title = title;
   return res.redirect(`/videos/${id}`);
 };
 
 export const getUpload = (req, res) => {
   return res.render("upload", { pageTitle: "Upload Video" });
 };
-export const postUpload = (req, res) => {
-  const { title } = req.body;
-  const newVideo = {
+export const postUpload = async (req, res) => {
+  const { title, description, hashtags } = req.body;
+  const video = new Video({
     title,
-    rating: 0,
-    createdAt: "Just Now",
-    views: 0,
-    id: videos.length + 1,
-  };
-  videos.push(newVideo);
+    description,
+    createdAt: Date.now(),
+    meta: {
+      views: 0,
+      ratings: 0,
+    },
+    hashtags: hashtags.split(",").map((word) => `#${word}`),
+  });
+  try {
+    await video.save();
+  } catch (error) {
+    return res.render("upload", {
+      pageTitle: "Upload Video",
+      errorMessage: error._message,
+    });
+  }
   return res.redirect("/");
 };
