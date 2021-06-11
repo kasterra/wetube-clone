@@ -1,53 +1,80 @@
 import Video from "../models/Video";
-import video from "../models/Video";
 
 export const home = async (req, res) => {
-  try {
     const videos = await Video.find({});
-    console.log(videos);
     return res.render("home", { pageTitle: "Home", videos });
-  } catch (error) {}
-};
-export const search = (req, res) => res.send("search");
-export const deleteVideo = (req, res) => res.send("delete video");
-export const watch = async (req, res) => {
-  const { id } = req.params;
-  const video = await Video.findById(id);
-  return res.render("watch", { pageTitle: video.title, video });
-};
-export const getEdit = (req, res) => {
-  const { id } = req.params;
-  return res.render("edit");
 };
 
-export const postEdit = (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
-  return res.redirect(`/videos/${id}`);
+export const watch = async (req, res) => {
+    const { id } = req.params;
+    const video = await Video.findById(id);
+    if (!video) {
+        return res.render("404", { pageTitle: "VIDEO NOT FOUND" });
+    }
+    return res.render("watch", { pageTitle: video.title, video });
+};
+export const getEdit = async (req, res) => {
+    const { id } = req.params;
+    const video = await Video.findById(id);
+    return res.render("edit", { pageTitle: `Editing ${video.title}`, video });
+};
+
+export const postEdit = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, hashtags } = req.body;
+    const video = await Video.exists({ _id: id });
+    if (!video) {
+        return res.render("404", { pageTitle: "Video Not Found" });
+    }
+    await Video.findByIdAndUpdate(id, {
+        title,
+        description,
+        hashtags: Video.formatHashtags(hashtags),
+    });
+    return res.redirect(`/videos/${id}`);
 };
 
 export const getUpload = (req, res) => {
-  return res.render("upload", { pageTitle: "Upload Video" });
+    return res.render("upload", { pageTitle: "Upload Video" });
 };
 export const postUpload = async (req, res) => {
-  const { title, description, hashtags } = req.body;
-  const video = new Video({
-    title,
-    description,
-    createdAt: Date.now(),
-    meta: {
-      views: 0,
-      ratings: 0,
-    },
-    hashtags: hashtags.split(",").map((word) => `#${word}`),
-  });
-  try {
-    await video.save();
-  } catch (error) {
-    return res.render("upload", {
-      pageTitle: "Upload Video",
-      errorMessage: error._message,
+    const { title, description, hashtags } = req.body;
+    const video = new Video({
+        title,
+        description,
+        createdAt: Date.now(),
+        meta: {
+            views: 0,
+            ratings: 0,
+        },
+        hashtags: Video.formatHashtags(hashtags),
     });
-  }
-  return res.redirect("/");
+    try {
+        await video.save();
+    } catch (error) {
+        return res.render("upload", {
+            pageTitle: "Upload Video",
+            errorMessage: error._message,
+        });
+    }
+    return res.redirect("/");
+};
+
+export const deleteVideo = async (req, res) => {
+    const { id } = req.params;
+    await Video.findByIdAndDelete(id);
+    return res.redirect("/");
+};
+
+export const search = async (req, res) => {
+    const { keyword } = req.query;
+    let videos = [];
+    if (keyword) {
+        videos = await Video.find({
+            title: {
+              $regex: new RegExp(keyword,"i")
+            },
+        });
+    }
+    return res.render("search", { pageTitle: "Search", videos });
 };
