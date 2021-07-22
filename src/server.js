@@ -24,9 +24,11 @@ app.use(
         create: MongoStore.create({
             mongoUrl: process.env.DB_URL,
         }),
+        maxAge: 600000,
     })
 );
 app.use(localsMiddleware);
+app.use("/uploads",express.static("uploads"))
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);

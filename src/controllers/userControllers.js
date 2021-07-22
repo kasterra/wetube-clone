@@ -1,4 +1,5 @@
 import User from "../models/User";
+import Video from "../models/Video"
 import bcrypt, { compare } from "bcrypt";
 import fetch from "node-fetch";
 import { token } from "morgan";
@@ -39,7 +40,48 @@ export const postJoin = async (req, res) => {
         });
     }
 };
-export const edit = (req, res) => res.send("edit user");
+export const getEdit = (req, res) => {
+    res.render("edit-profile", { pageTitle: "Edit Profile" });
+};
+export const postEdit = async (req, res) => {
+    const {
+        session: {
+            user: { _id, email: prevEmail, username: prevUserName, avatarUrl },
+        },
+        body: { name, email, username, location },
+        file,
+    } = req;
+    if (prevEmail !== email || prevUserName !== username) {
+        try {
+            const exists = await User.exists({
+                $or: [{ username }, { email }],
+            });
+
+            if (exists) {
+                return res.status(400).render("edit-profile", {
+                    pageTitle: "edit profile",
+                    errorMessage: "userName or email is already in use",
+                });
+            }
+        } catch (e) {
+            res.redirect("/");
+        }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        {
+            avatarUrl: file ? file.path : avatarUrl,
+            name,
+            email,
+            username,
+            location,
+        },
+        { new: true }
+    );
+    req.session.user = updatedUser;
+    res.render("edit-profile", { pageTitle: "Edit profile" });
+};
 export const remove = (req, res) => res.send("remove user");
 export const getLogin = (req, res) =>
     res.render("login", { pageTitle: "Login" });
@@ -140,5 +182,19 @@ export const finishGithubLogin = async (req, res) => {
 export const logout = (req, res) => {
     req.session.destroy();
     return res.redirect("/");
-}
-export const see = (req, res) => res.send("see");
+};
+
+export const getChangePassword = (req, res) => {
+    return res.render("change-password", { pageTitle: "change password" });
+};
+export const postChangePassword = (req, res) => {
+    return res.redirect("/");
+};
+export const see = async (req, res) => {
+    const { id } = req.params;
+    const user = await User.findById(id).populate("videos");
+    if(!user){
+        return res.status(404).render("404");
+    }
+    return res.render("profile", { pageTitle: `${user.name}\'s profile`,user });
+};
