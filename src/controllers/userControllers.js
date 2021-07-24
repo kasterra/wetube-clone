@@ -1,16 +1,15 @@
 import User from "../models/User";
-import Video from "../models/Video"
 import bcrypt, { compare } from "bcrypt";
 import fetch from "node-fetch";
 import { token } from "morgan";
 import { restart } from "nodemon";
 
 export const getJoin = (req, res) =>
-    res.render("joinAccount", { pageTitle: "Create Account" });
+    res.render("join", { pageTitle: "Create Account" });
 export const postJoin = async (req, res) => {
     const { name, username, email, password, password2, location } = req.body;
     if (password !== password2) {
-        return res.status(400).render("joinAccount", {
+        return res.status(400).render("join", {
             pageTitle: "Create Account",
             errorMessage: "Password Confirmation doesn't match",
         });
@@ -19,7 +18,7 @@ export const postJoin = async (req, res) => {
         $or: [{ username }, { email }],
     });
     if (existsDuplicated) {
-        return res.status(400).render("joinAccount", {
+        return res.status(400).render("join", {
             pageTitle: "Create Account",
             errorMessage: "This Username/Email is Already Taken",
         });
@@ -34,7 +33,7 @@ export const postJoin = async (req, res) => {
         });
         return res.redirect("/login");
     } catch (error) {
-        return res.status(400).render("joinAccount", {
+        return res.status(400).render("join", {
             pageTitle: "Create Account",
             errorMessage: error._message,
         });
@@ -167,6 +166,7 @@ export const finishGithubLogin = async (req, res) => {
                 socialOnly: true,
                 password: "",
                 location: userData.location,
+                avatarUrl: userData.avatar_url,
             });
             req.session.loggedIn = true;
             req.session.user = user;
@@ -185,16 +185,27 @@ export const logout = (req, res) => {
 };
 
 export const getChangePassword = (req, res) => {
-    return res.render("change-password", { pageTitle: "change password" });
+    return res.render("users/change-password", {
+        pageTitle: "change password",
+    });
 };
 export const postChangePassword = (req, res) => {
     return res.redirect("/");
 };
 export const see = async (req, res) => {
     const { id } = req.params;
-    const user = await User.findById(id).populate("videos");
-    if(!user){
+    const user = await User.findById(id).populate({
+        path: "videos",
+        populate: {
+            path: "owner",
+            model: "User",
+        },
+    });
+    if (!user) {
         return res.status(404).render("404");
     }
-    return res.render("profile", { pageTitle: `${user.name}\'s profile`,user });
+    return res.render("users/profile", {
+        pageTitle: `${user.name}\'s profile`,
+        user,
+    });
 };
