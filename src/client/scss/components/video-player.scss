@@ -1,0 +1,35 @@
+#videoContainer {
+    width: 100%;
+    position: relative;
+    video {
+        width: 100%;
+    }
+    #videoControls {
+        opacity: 0;
+        position: absolute;
+        bottom: 10px;
+        width: 95%;
+        transition: opacity 0.5s ease-in-out;
+        &.showing {
+            opacity: 1;
+        }
+        display: grid;
+        padding: 10px;
+        grid-template-columns: 1fr 4fr 1fr auto;
+        justify-content: space-between;
+        .videoControls__play {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .videoControls__volume {
+            margin-left:10px;
+            i {
+                font-size: 20px;
+            }
+        }
+    }
+}
+#timeControls {
+    display: flex;
+}
