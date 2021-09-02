@@ -1,5 +1,6 @@
 import Video from "../models/Video";
 import User from "../models/User";
+import { isValidObjectId } from "mongoose";
 
 export const home = async (req, res) => {
     const videos = await Video.find({})
@@ -111,4 +112,16 @@ export const search = async (req, res) => {
         }).populate("owner");
     }
     return res.render("search", { pageTitle: "Search", videos });
+};
+
+export const registerView = async (req, res) => {
+    const { id } = req.params;
+    console.log(id);
+    const video = await Video.findById(id);
+    if (!video) {
+        return res.sendStatus(404);
+    }
+    video.meta.views = video.meta.views + 1;
+    await video.save();
+    return res.sendStatus(200);
 };

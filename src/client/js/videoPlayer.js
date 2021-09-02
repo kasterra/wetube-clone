@@ -107,6 +107,10 @@ const handleKeyDown = (e) => {
             break;
     }
 };
+const handleEnded = (e) => {
+    const { videoid } = videoContainer.dataset;
+    fetch(`/api/videos/${videoid}/view`, { method: "POST" });
+};
 
 if (video.readyState == 4) {
     handleLoadedMetadata();
@@ -121,6 +125,7 @@ muteBtn.addEventListener("click", handleMute);
 volumeRange.addEventListener("input", handleVolumeChange);
 video.addEventListener("loadedmetadata", handleLoadedMetadata);
 video.addEventListener("timeupdate", handleTimeUpdate);
+video.addEventListener("ended", handleEnded);
 videoContainer.addEventListener("mousemove", handleMouseMove);
 videoContainer.addEventListener("mouseleave", handleMouseLeave);
 timeline.addEventListener("input", handleTimelineChange);
