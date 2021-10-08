@@ -3,12 +3,14 @@ extends base.pug
 block content
   div
     video#preview
-    button#startBtn Start Recording
+    button#actionBtn Start Recording
   if errorMessage
     span=errorMessage
   form(method="POST" enctype="multipart/form-data")
     label(for="video") Video file 
     input(type="file", name="video", required, accept="video/*", id="video")
+    label(for="thumb") Thumbnail File 
+    input(type="file", name="thumb", required, accept="image/*", id="thumb")
     input(type="text", name="title", required, placeholder="Title", maxlength=80)
     input(type="text", name="description", required, placeholder="Description", minlength=20)
     input(
