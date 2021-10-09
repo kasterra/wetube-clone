@@ -9,16 +9,19 @@ export const localsMiddleware = (req, res, next) => {
 
 export const protectorMiddleware = (req, res, next) => {
   if (!req.session.loggedIn) {
+    req.flash("error", "Not Authorized");
     return res.redirect("/login");
   }
   next();
 };
 
 export const publicOnlyMiddleware = (req, res, next) => {
-  if (req.session.loggedIn) {
+  if (!req.session.loggedIn) {
+    return next();
+  } else {
+    req.flash("error", "Not Authorized");
     return res.redirect("/");
   }
-  next();
 };
 export const avatarUpload = multer({
   dest: "uploads/avatars/",
