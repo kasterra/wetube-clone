@@ -5,5 +5,7 @@ import "./models/Video";
 import "./models/User";
 import app from "./server";
 
-const handleListending = () => console.log("Server listening...");
-app.listen(4000, "0.0.0.0", handleListending);
+const PORT = process.env.PORT || 4000;
+
+const handleListening = () => console.log("Server listening...");
+app.listen(PORT, handleListening);
