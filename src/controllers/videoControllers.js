@@ -119,7 +119,6 @@ export const search = async (req, res) => {
 
 export const registerView = async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   const video = await Video.findById(id);
   if (!video) {
     return res.sendStatus(404);
@@ -143,4 +142,23 @@ export const createComment = async (req, res) => {
   video.comments.push(comment._id);
   video.save();
   return res.sendStatus(201);
+};
+
+export const deleteComment = async (req, res) => {
+  const {
+    params: { id },
+    body: { commentId, isNew },
+    session: { user },
+  } = req;
+  const video = await Video.findById(id);
+  const commentToDelete = await Comment.findById(commentId);
+  if (!isNew && String(user._id) !== String(commentToDelete.owner)) {
+    req.flash("error", "Not Authorized");
+    return res.sendStatus(403);
+  }
+  video.comments.splice(video.comments.indexOf(commentId), 1);
+  await video.save();
+  await Comment.findByIdAndDelete(commentId);
+
+  res.sendStatus(200);
 };
